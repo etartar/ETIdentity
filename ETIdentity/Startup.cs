@@ -25,7 +25,7 @@ namespace ETIdentity
             {
                 options.UseNpgsql(Configuration.GetConnectionString("PostgreSQL"));
             });
-            services.AddIdentity<AppUser, IdentityRole>().AddEntityFrameworkStores<AppIdentityDbContext>();
+            services.AddIdentity<AppUser, AppRole>().AddEntityFrameworkStores<AppIdentityDbContext>();
             services.AddControllersWithViews();
         }
 
