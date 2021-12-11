@@ -37,6 +37,7 @@ namespace ETIdentity
                 options.User.RequireUniqueEmail = true;
                 options.User.AllowedUserNameCharacters = "abcçdefgðhýijklmnoöpqrsþtuüvwxyzABCÇDEFGÐHIÝJKLMNOPQRSÞTUÜVWXYZ0123456789-._";
             })
+                .AddUserValidator<CustomUserNameValidator>()
                 .AddPasswordValidator<CustomPasswordValidator>()
                 .AddEntityFrameworkStores<AppIdentityDbContext>();
 
