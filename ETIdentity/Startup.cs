@@ -33,6 +33,9 @@ namespace ETIdentity
                 options.Password.RequireLowercase = false;
                 options.Password.RequireUppercase = false;
                 options.Password.RequireDigit = false;
+
+                options.User.RequireUniqueEmail = true;
+                options.User.AllowedUserNameCharacters = "abcçdefgðhýijklmnoöpqrsþtuüvwxyzABCÇDEFGÐHIÝJKLMNOPQRSÞTUÜVWXYZ0123456789-._";
             })
                 .AddPasswordValidator<CustomPasswordValidator>()
                 .AddEntityFrameworkStores<AppIdentityDbContext>();
