@@ -1,7 +1,9 @@
 ﻿using ETIdentity.Models;
+using ETIdentity.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ETIdentity.Controllers
 {
