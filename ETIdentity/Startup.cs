@@ -1,7 +1,7 @@
+using ETIdentity.CustomValidations;
 using ETIdentity.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +25,7 @@ namespace ETIdentity
             {
                 options.UseNpgsql(Configuration.GetConnectionString("PostgreSQL"));
             });
+
             services.AddIdentity<AppUser, AppRole>((options) =>
             {
                 options.Password.RequiredLength = 4;
@@ -32,7 +33,10 @@ namespace ETIdentity
                 options.Password.RequireLowercase = false;
                 options.Password.RequireUppercase = false;
                 options.Password.RequireDigit = false;
-            }).AddEntityFrameworkStores<AppIdentityDbContext>();
+            })
+                .AddPasswordValidator<CustomPasswordValidator>()
+                .AddEntityFrameworkStores<AppIdentityDbContext>();
+
             services.AddControllersWithViews();
         }
 
