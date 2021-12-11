@@ -13,11 +13,14 @@ namespace ETIdentity.CustomValidations
 
             if (password.ToLower().Contains(user.UserName.ToLower()))
             {
-                errors.Add(new IdentityError()
+                if (!user.Email.Contains(user.UserName))
                 {
-                    Code = "PasswordContainsUserName",
-                    Description = "Şifre alanı kullanıcı adı içeremez."
-                });
+                    errors.Add(new IdentityError()
+                    {
+                        Code = "PasswordContainsUserName",
+                        Description = "Şifre alanı kullanıcı adı içeremez."
+                    });
+                }
             }
 
             if (password.ToLower().Contains("1234"))
