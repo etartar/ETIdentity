@@ -26,6 +26,7 @@ namespace ETIdentity
                 options.UseNpgsql(Configuration.GetConnectionString("PostgreSQL"));
             });
 
+            #region [Identity Settings]
             services.AddIdentity<AppUser, AppRole>((options) =>
             {
                 options.Password.RequiredLength = 4;
@@ -39,9 +40,11 @@ namespace ETIdentity
             })
                 .AddUserValidator<CustomUserNameValidator>()
                 .AddPasswordValidator<CustomPasswordValidator>()
+                .AddErrorDescriber<CustomIdentityErrorDescriber>()
                 .AddEntityFrameworkStores<AppIdentityDbContext>();
 
             services.AddControllersWithViews();
+            #endregion
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
