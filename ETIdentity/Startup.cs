@@ -2,6 +2,7 @@ using ETIdentity.CustomValidations;
 using ETIdentity.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +26,34 @@ namespace ETIdentity
             {
                 options.UseNpgsql(Configuration.GetConnectionString("PostgreSQL"));
             });
+
+            #region [Cookie Settings]
+            CookieBuilder cookieBuilder = new CookieBuilder();
+            cookieBuilder.Name = "MyBlog";
+            /// Kötü niyetli kullanýcýlar client-side da benim cookie me eriþemesin diye true yapýyoruz.
+            cookieBuilder.HttpOnly = true;
+            /// Ne kadar süre kullanýcýnýn bilgisayarýn da kalacaðýný belirtiyoruz.
+            cookieBuilder.Expiration = System.TimeSpan.FromDays(60);
+            /// Ben bir cookie kaydettikten sonra sadece o site üzerinden bu cookie ye eriþebiliyorum. 
+            /// Lax dersem bu özelliði kapatmýþ olurum. Strict dersem bu özelliði kýsmýþ olurum.
+            /// Strict dediðim zaman sadece benim sitem üzerinden gelen cookieleri almýþ olurum.
+            /// Cross-Site Request Forgery(CSRF) siteler arasý istek hýrsýzlýðý. Bu cookie nin benim sitem üzerinden gelmesi ne anlama geliyor.
+            /// SameSiteMode özelliðini Strict olarak ayarlarsam istek hýrsýzlýðýnýn önüne geçmiþ olurum. Baþka bir site üzerinden browserýn cookie göndermesini engelliyorum.
+            /// Farklý alt alan adlarýnýn ayný cookieyi kullanabilmeleri için bu özellik default olarak Lax ta býrakýlýr.
+            cookieBuilder.SameSite = SameSiteMode.Lax;
+            /// Güvenlik ayarý ile ilgili bir ayar. Eðer kullanýcý login olduðu zaman cookie oluþtuðu zaman https isteði üzerinden bu cookienin gönderilmesi.
+            /// Siz bunu Always yaparsanýz browser sizin cookienizi sadece https üzerinden bir istek gelmiþ ise gönderiyor.
+            /// Siz bunu SameAsRequest yaparsanýz, eðer istek http üzerinden geldiyse http, https üzerinden geldiyse https üzerinden senin cookieni gönderiyor.
+            cookieBuilder.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+
+            services.ConfigureApplicationCookie((options) =>
+            {
+                options.LoginPath = PathString.FromUriComponent("/Home/Login");
+                options.LogoutPath = PathString.FromUriComponent("/Home/Logout");
+                options.Cookie = cookieBuilder;
+                options.SlidingExpiration = false; // Bunu true yaparsan kullanýcý benim siteme 32 gün sonra tekrar istek yaparsa expiration süresi bir 60 gün daha ötelenecek.
+            });
+            #endregion
 
             #region [Identity Settings]
             services.AddIdentity<AppUser, AppRole>((options) =>
