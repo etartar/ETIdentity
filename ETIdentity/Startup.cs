@@ -27,6 +27,26 @@ namespace ETIdentity
                 options.UseNpgsql(Configuration.GetConnectionString("PostgreSQL"));
             });
 
+            #region [Identity Settings]
+            services.AddIdentity<AppUser, AppRole>((options) =>
+            {
+                options.Password.RequiredLength = 4;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireDigit = false;
+
+                options.User.RequireUniqueEmail = true;
+                options.User.AllowedUserNameCharacters = "abcçdefgðhýijklmnoöpqrsþtuüvwxyzABCÇDEFGÐHIÝJKLMNOPQRSÞTUÜVWXYZ0123456789-._";
+            })
+                .AddUserValidator<CustomUserNameValidator>()
+                .AddPasswordValidator<CustomPasswordValidator>()
+                .AddErrorDescriber<CustomIdentityErrorDescriber>()
+                .AddEntityFrameworkStores<AppIdentityDbContext>();
+
+            services.AddControllersWithViews();
+            #endregion
+
             #region [Cookie Settings]
             CookieBuilder cookieBuilder = new CookieBuilder();
             cookieBuilder.Name = "MyBlog";
@@ -51,28 +71,9 @@ namespace ETIdentity
                 options.LoginPath = PathString.FromUriComponent("/Home/Login");
                 options.LogoutPath = PathString.FromUriComponent("/Home/Logout");
                 options.Cookie = cookieBuilder;
+                options.ExpireTimeSpan = System.TimeSpan.FromDays(60);
                 options.SlidingExpiration = false; // Bunu true yaparsan kullanýcý benim siteme 32 gün sonra tekrar istek yaparsa expiration süresi bir 60 gün daha ötelenecek.
             });
-            #endregion
-
-            #region [Identity Settings]
-            services.AddIdentity<AppUser, AppRole>((options) =>
-            {
-                options.Password.RequiredLength = 4;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireDigit = false;
-
-                options.User.RequireUniqueEmail = true;
-                options.User.AllowedUserNameCharacters = "abcçdefgðhýijklmnoöpqrsþtuüvwxyzABCÇDEFGÐHIÝJKLMNOPQRSÞTUÜVWXYZ0123456789-._";
-            })
-                .AddUserValidator<CustomUserNameValidator>()
-                .AddPasswordValidator<CustomPasswordValidator>()
-                .AddErrorDescriber<CustomIdentityErrorDescriber>()
-                .AddEntityFrameworkStores<AppIdentityDbContext>();
-
-            services.AddControllersWithViews();
             #endregion
         }
 

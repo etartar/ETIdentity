@@ -25,8 +25,10 @@ namespace ETIdentity.Controllers
             return View();
         }
 
-        public IActionResult Login()
+        public IActionResult Login(string returnUrl)
         {
+            TempData["ReturnUrl"] = returnUrl;
+
             return View();
         }
 
@@ -42,10 +44,15 @@ namespace ETIdentity.Controllers
                 {
                     await _signInManager.SignOutAsync();
 
-                    Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
+                    Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.PasswordSignInAsync(user, model.Password, model.RememberMe, false);
 
                     if (result.Succeeded)
                     {
+                        if (TempData["ReturnUrl"] != null)
+                        {
+                            return Redirect(TempData["ReturnUrl"].ToString());
+                        }
+
                         return RedirectToAction("Index", "Member");
                     }
                     else
