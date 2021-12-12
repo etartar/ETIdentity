@@ -3,6 +3,7 @@ using ETIdentity.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Threading.Tasks;
 
 namespace ETIdentity.Controllers
@@ -42,22 +43,44 @@ namespace ETIdentity.Controllers
 
                 if (user != null)
                 {
-                    await _signInManager.SignOutAsync();
-
-                    Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.PasswordSignInAsync(user, model.Password, model.RememberMe, false);
-
-                    if (result.Succeeded)
+                    if (await _userManager.IsLockedOutAsync(user))
                     {
-                        if (TempData["ReturnUrl"] != null)
-                        {
-                            return Redirect(TempData["ReturnUrl"].ToString());
-                        }
-
-                        return RedirectToAction("Index", "Member");
+                        ModelState.AddModelError("", "Hesabınız bir süreliğine kitlenmiştir. Lütfen daha sonra tekrar deneyiniz.");
                     }
                     else
                     {
-                        ModelState.AddModelError("", "Kullanıcı bilgileri hatalı.");
+                        await _signInManager.SignOutAsync();
+
+                        Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.PasswordSignInAsync(user, model.Password, model.RememberMe, false);
+
+                        if (result.Succeeded)
+                        {
+                            await _userManager.ResetAccessFailedCountAsync(user);
+
+                            if (TempData["ReturnUrl"] != null)
+                            {
+                                return Redirect(TempData["ReturnUrl"].ToString());
+                            }
+
+                            return RedirectToAction("Index", "Member");
+                        }
+                        else
+                        {
+                            await _userManager.AccessFailedAsync(user);
+
+                            int fail = await _userManager.GetAccessFailedCountAsync(user);
+
+                            if (fail == 3)
+                            {
+                                await _userManager.SetLockoutEndDateAsync(user, new DateTimeOffset(DateTime.Now.AddMinutes(20)));
+
+                                ModelState.AddModelError("", "Hesabınız 3 başarısız girişten dolayı 20 dakika süre ile kitlenmiştir. Lütfen daha sonra tekrar deneyiniz.");
+                            }
+                            else
+                            {
+                                ModelState.AddModelError("", "Kullanıcı bilgileri hatalı.");
+                            }
+                        }
                     }
                 }
                 else
