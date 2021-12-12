@@ -1,4 +1,5 @@
-﻿using ETIdentity.Models;
+﻿using ETIdentity.Helpers;
+using ETIdentity.Models;
 using ETIdentity.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -122,6 +123,88 @@ namespace ETIdentity.Controllers
                     {
                         ModelState.AddModelError("", error.Description);
                     }
+                }
+            }
+
+            return View(model);
+        }
+    
+        public IActionResult ResetPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(PasswordResetViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                AppUser user = await _userManager.FindByEmailAsync(model.Email);
+
+                if (user != null)
+                {
+                    string passwordResetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+                    string passwordResetLink = Url.Action("ResetPasswordConfirm", "Home", new
+                    {
+                        userId = user.Id,
+                        token = passwordResetToken
+                    }, HttpContext.Request.Scheme);
+
+                    PasswordReset.PasswordResetSendEmail(passwordResetLink);
+
+                    ViewBag.Status = "success";
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Kullanıcı bilgisi bulunamadı.");
+                }
+            }
+
+            return View(model);
+        }
+        
+        public IActionResult ResetPasswordConfirm(string userId, string token)
+        {
+            TempData["userId"] = userId;
+            TempData["token"] = token;
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPasswordConfirm([Bind("Password")] PasswordResetViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                string userId = TempData["userId"].ToString();
+                string token = TempData["token"].ToString();
+
+                AppUser user = await _userManager.FindByIdAsync(userId);
+
+                if (user != null)
+                {
+                    IdentityResult result = await _userManager.ResetPasswordAsync(user, token, model.Password);
+
+                    if (result.Succeeded)
+                    {
+                        await _userManager.UpdateSecurityStampAsync(user);
+
+                        ViewBag.status = "success";
+                    }
+                    else
+                    {
+                        foreach (var error in result.Errors)
+                        {
+                            ModelState.AddModelError("", error.Description);
+                        }
+                    }
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Bir meydana gelmiştir. Daha sonra tekrar deneyiniz.");
                 }
             }
 
