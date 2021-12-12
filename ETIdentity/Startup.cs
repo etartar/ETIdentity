@@ -33,7 +33,7 @@ namespace ETIdentity
             /// Kötü niyetli kullanýcýlar client-side da benim cookie me eriþemesin diye true yapýyoruz.
             cookieBuilder.HttpOnly = true;
             /// Ne kadar süre kullanýcýnýn bilgisayarýn da kalacaðýný belirtiyoruz.
-            cookieBuilder.Expiration = System.TimeSpan.FromDays(60);
+            //cookieBuilder.Expiration = System.TimeSpan.FromMinutes(60);
             /// Ben bir cookie kaydettikten sonra sadece o site üzerinden bu cookie ye eriþebiliyorum. 
             /// Lax dersem bu özelliði kapatmýþ olurum. Strict dersem bu özelliði kýsmýþ olurum.
             /// Strict dediðim zaman sadece benim sitem üzerinden gelen cookieleri almýþ olurum.
